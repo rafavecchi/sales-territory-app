@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Territory Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Team member view - full screen map */
+        #teamMemberView {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #teamMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .section h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .file-upload {
+            margin-bottom: 15px;
+        }
+
+        .file-upload label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-upload input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+            font-size: 13px;
+        }
+
+        .team-members {
+            margin-top: 15px;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .team-member input[type="color"] {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .team-member input[type="text"] {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .team-member button {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .team-member button:hover {
+            background: #c82333;
+        }
+
+        .team-member .link-btn {
+            padding: 6px 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .team-member .link-btn:hover {
+            background: #218838;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #map, #teamMap {
+            flex: 1;
+            height: 100%;
+        }
+
+        .location-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .location-item {
+            padding: 10px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .location-item strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #2c3e50;
+        }
+
+        .location-item select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .location-item .details {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .info-message {
+            padding: 12px;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            color: #0c5460;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .export-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        .export-section button {
+            flex: 1;
+        }
+
+        .leaflet-popup-content {
+            margin: 10px;
+        }
+
+        .popup-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+
+        .popup-content p {
+            margin: 4px 0;
+            font-size: 13px;
+        }
+
+        .popup-content select {
+            width: 100%;
+            padding: 6px;
+            margin-top: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .popup-content .note-input {
+            width: 100%;
+            padding: 6px;
+            margin-top: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="teamMemberView" class="hidden">
+        <div id="teamMap" style="width: 100vw; height: 100vh;"></div>
+    </div>
+
+    <div id="managerView" class="container hidden">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>📍 Territory Manager</h1>
+                <p>Door-to-Door Sales Team</p>
+            </div>
+
+            <div class="section">
+                <h2>Import Locations</h2>
+                <div class="info-message">
+                    Upload your CSV with: Latitude, Longitude, Name, Address, Max Speed, Current Speed, Wireless Oppt, Installed on, Pref Lang, Assigned to
+                    <br><br>
+                    <strong>✅ Real-time sync enabled!</strong> All changes sync automatically across all team members' devices.
+                </div>
+                <div class="file-upload">
+                    <label>Upload CSV File</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="importCSV()">Import Locations</button>
+            </div>
+
+            <div class="section">
+                <h2>Team Members</h2>
+                <div class="team-members" id="teamMembers"></div>
+                <button class="btn btn-secondary btn-block" onclick="addTeamMember()">+ Add Team Member</button>
+            </div>
+
+            <div class="section">
+                <h2>Statistics</h2>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="number" id="totalLocations">0</div>
+                        <div class="label">Total Locations</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" id="assignedLocations">0</div>
+                        <div class="label">Assigned</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Locations</h2>
+                <div class="location-list" id="locationList"></div>
+            </div>
+
+            <div class="section">
+                <h2>Export Data</h2>
+                <div class="export-section">
+                    <button class="btn btn-success" onclick="exportData()">Export CSV</button>
+                    <button class="btn btn-secondary" onclick="saveState()">Save State</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // Initialize Firebase with error handling
+        let database;
+        
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDXnBhUU1hGiZ5W5sEqGqO8Qjyi2wDujwI",
+                authDomain: "sales-territory-app-b0e61.firebaseapp.com",
+                databaseURL: "https://sales-territory-app-b0e61-default-rtdb.firebaseio.com",
+                projectId: "sales-territory-app-b0e61",
+                storageBucket: "sales-territory-app-b0e61.firebasestorage.app",
+                messagingSenderId: "43002944003",
+                appId: "1:43002944003:web:c42a7e3b53c01d88aa4c36"
+            };
+            
+            console.log('Initializing Firebase...');
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            alert('Error initializing Firebase: ' + error.message);
+        }
+        
+        // Check if this is a team member view
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamMemberName = urlParams.get('team');
+        const isTeamView = teamMemberName !== null && teamMemberName !== '';
+
+        console.log('Full URL:', window.location.href);
+        console.log('Search string:', window.location.search);
+        console.log('URL params:', window.location.search);
+        console.log('Team member name:', teamMemberName);
+        console.log('Is team view:', isTeamView);
+        console.log('All URL params:');
+        for (const [key, value] of urlParams) {
+            console.log(`  ${key}: ${value}`);
+        }
+
+        let map;
+        let locations = [];
+        let teamMembers = [
+            { id: 1, name: 'Team Member 1', color: '#FF6B6B' },
+            { id: 2, name: 'Team Member 2', color: '#4ECDC4' },
+            { id: 3, name: 'Team Member 3', color: '#45B7D1' }
+        ];
+        let markers = [];
+        let nextId = 1;
+        let nextTeamId = 4;
+
+        // Initialize appropriate view
+        console.log('Initializing view...');
+        if (isTeamView) {
+            console.log('Loading TEAM MEMBER view for:', teamMemberName);
+            initTeamMemberView();
+        } else {
+            console.log('Loading MANAGER view');
+            initManagerView();
+        }
+
+        function initManagerView() {
+            console.log('initManagerView called');
+            const managerView = document.getElementById('managerView');
+            const teamView = document.getElementById('teamMemberView');
+            
+            teamView.style.display = 'none';
+            managerView.style.display = 'flex';
+            
+            console.log('Manager view display:', managerView.style.display);
+            console.log('Team view display:', teamView.style.display);
+            
+            map = L.map('map').setView([39.8283, -98.5795], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            renderTeamMembers();
+            loadState();
+        }
+
+        function initTeamMemberView() {
+            console.log('initTeamMemberView called');
+            const managerView = document.getElementById('managerView');
+            const teamView = document.getElementById('teamMemberView');
+            
+            managerView.style.display = 'none';
+            teamView.style.display = 'block';
+            
+            console.log('Manager view display:', managerView.style.display);
+            console.log('Team view display:', teamView.style.display);
+            
+            map = L.map('teamMap').setView([39.8283, -98.5795], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            console.log('Map initialized for team member view');
+            loadState();
+        }
+
+        function displayTeamMemberLocations() {
+            console.log('displayTeamMemberLocations called');
+            console.log('Team member name from URL:', teamMemberName);
+            console.log('All team members:', teamMembers);
+            console.log('All locations:', locations);
+            
+            const teamMember = teamMembers.find(tm => tm.name === decodeURIComponent(teamMemberName));
+            
+            console.log('Found team member:', teamMember);
+            
+            if (!teamMember) {
+                console.error('Team member not found!');
+                alert('Team member "' + teamMemberName + '" not found. Please check the link.');
+                return;
+            }
+
+            const myLocations = locations.filter(loc => loc.assignedTo === teamMember.id);
+            console.log('Filtered locations for this team member:', myLocations);
+            
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Add markers for team member's locations
+            myLocations.forEach(location => {
+                // Use status color if available, otherwise use team color
+                const statusColors = {
+                    'pending': '#808080',
+                    'not-home': '#FFD700',
+                    'go-back': '#FFB6C1',
+                    'sold': '#00FF00',
+                    'garbage': '#FF0000'
+                };
+                const pinColor = statusColors[location.status] || teamMember.color;
+                
+                const marker = L.marker([location.lat, location.lng], {
+                    icon: createMarkerIcon(pinColor)
+                }).addTo(map);
+
+                const popupContent = `
+                    <div class="popup-content">
+                        <h3>${location.name || 'No Name'}</h3>
+                        <p><strong>Address:</strong> ${location.address || 'N/A'}</p>
+                        <p><strong>Max Speed:</strong> ${location.maxSpeed || 'N/A'}</p>
+                        <p><strong>Current Speed:</strong> ${location.currentSpeed || 'N/A'}</p>
+                        <p><strong>Wireless Oppt:</strong> ${location.wirelessOppt || 'N/A'}</p>
+                        <p><strong>Installed On:</strong> ${location.installedOn || 'N/A'}</p>
+                        <p><strong>Preferred Language:</strong> ${location.prefLang || 'N/A'}</p>
+                        <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Update Status:</label>
+                        <select onchange="updateStatusWithColor(${location.id}, this.value)" style="padding: 8px; font-size: 14px;">
+                            <option value="pending" ${location.status === 'pending' ? 'selected' : ''}>⚪ Pending</option>
+                            <option value="not-home" ${location.status === 'not-home' ? 'selected' : ''}>🟡 Not Home</option>
+                            <option value="go-back" ${location.status === 'go-back' ? 'selected' : ''}>🩷 Go Back</option>
+                            <option value="sold" ${location.status === 'sold' ? 'selected' : ''}>💰 Sold</option>
+                            <option value="garbage" ${location.status === 'garbage' ? 'selected' : ''}>🔴 Garbage</option>
+                        </select>
+                        <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Notes:</label>
+                        <textarea class="note-input" placeholder="Add notes..." onchange="updateNotes(${location.id}, this.value)">${location.notes || ''}</textarea>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+
+            // Fit bounds if there are locations
+            if (myLocations.length > 0) {
+                const bounds = L.latLngBounds(myLocations.map(loc => [loc.lat, loc.lng]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function addTeamMember() {
+            const colors = ['#95E1D3', '#F38181', '#AA96DA', '#FCBAD3', '#FFA07A', '#98D8C8'];
+            teamMembers.push({
+                id: nextTeamId++,
+                name: `Team Member ${teamMembers.length + 1}`,
+                color: colors[teamMembers.length % colors.length]
+            });
+            renderTeamMembers();
+            updateLocationList();
+        }
+
+        function removeTeamMember(id) {
+            if (teamMembers.length <= 1) {
+                alert('You must have at least one team member');
+                return;
+            }
+            teamMembers = teamMembers.filter(tm => tm.id !== id);
+            // Unassign locations from removed team member
+            locations.forEach(loc => {
+                if (loc.assignedTo === id) {
+                    loc.assignedTo = null;
+                }
+            });
+            renderTeamMembers();
+            updateMap();
+            updateLocationList();
+        }
+
+        function updateTeamMember(id, field, value) {
+            const member = teamMembers.find(tm => tm.id === id);
+            if (member) {
+                member[field] = value;
+                updateMap();
+                updateLocationList();
+            }
+        }
+
+        function getTeamMemberLink(id) {
+            const teamMember = teamMembers.find(tm => tm.id === id);
+            if (!teamMember) return '';
+            // Use team member name in URL (encoded for URL safety)
+            const baseUrl = 'https://rafavecchi.github.io/sales-territory-app/index.html';
+            return `${baseUrl}?team=${encodeURIComponent(teamMember.name)}`;
+        }
+
+        function copyTeamLink(id) {
+            const link = getTeamMemberLink(id);
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy this link:', link);
+            });
+        }
+
+        function renderTeamMembers() {
+            const container = document.getElementById('teamMembers');
+            container.innerHTML = teamMembers.map(tm => `
+                <div class="team-member">
+                    <input type="color" value="${tm.color}" 
+                           onchange="updateTeamMember(${tm.id}, 'color', this.value)">
+                    <input type="text" value="${tm.name}" 
+                           onchange="updateTeamMember(${tm.id}, 'name', this.value)">
+                    <button class="link-btn" onclick="copyTeamLink(${tm.id})">📋 Link</button>
+                    <button onclick="removeTeamMember(${tm.id})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        async function importCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                complete: async function(results) {
+                    const newLocations = [];
+                    
+                    for (const row of results.data) {
+                        // Skip empty rows
+                        if (!row.Latitude && !row.Longitude) continue;
+                        
+                        const lat = parseFloat(row.Latitude);
+                        const lng = parseFloat(row.Longitude);
+                        
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            // Find team member by name if assigned
+                            let assignedToId = null;
+                            if (row['Assigned to']) {
+                                const assignedName = row['Assigned to'].trim();
+                                const teamMember = teamMembers.find(tm => 
+                                    tm.name.toLowerCase() === assignedName.toLowerCase()
+                                );
+                                if (teamMember) {
+                                    assignedToId = teamMember.id;
+                                } else {
+                                    // Create new team member if not found
+                                    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3', '#FFA07A', '#98D8C8'];
+                                    const newMember = {
+                                        id: nextTeamId++,
+                                        name: assignedName,
+                                        color: colors[(teamMembers.length) % colors.length]
+                                    };
+                                    teamMembers.push(newMember);
+                                    assignedToId = newMember.id;
+                                }
+                            }
+                            
+                            // Check if location already exists (within 0.0001 degrees ~11 meters)
+                            const existingIndex = locations.findIndex(loc => 
+                                Math.abs(loc.lat - lat) < 0.0001 && Math.abs(loc.lng - lng) < 0.0001
+                            );
+                            
+                            const newLocation = {
+                                id: existingIndex >= 0 ? locations[existingIndex].id : nextId++,
+                                name: row.Name || '',
+                                address: row.Address || '',
+                                lat: lat,
+                                lng: lng,
+                                maxSpeed: row['Max Speed'] || '',
+                                currentSpeed: row['Current Speed'] || '',
+                                wirelessOppt: row['Wireless Oppt'] || '',
+                                installedOn: row['Installed on'] || '',
+                                prefLang: row['Pref Lang'] || '',
+                                assignedTo: assignedToId,
+                                status: existingIndex >= 0 ? locations[existingIndex].status : 'pending',
+                                notes: existingIndex >= 0 ? locations[existingIndex].notes : ''
+                            };
+                            
+                            if (existingIndex >= 0) {
+                                // Replace existing location
+                                locations[existingIndex] = newLocation;
+                            } else {
+                                // Add new location
+                                newLocations.push(newLocation);
+                            }
+                        }
+                    }
+                    
+                    locations = locations.concat(newLocations);
+                    updateMap();
+                    updateLocationList();
+                    updateStats();
+                    renderTeamMembers();
+                    saveState();
+                    alert(`Imported ${newLocations.length} new locations, updated ${results.data.length - newLocations.length} existing locations`);
+                }
+            });
+        }
+
+        function createMarkerIcon(color) {
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z" 
+                          fill="${color}" stroke="#fff" stroke-width="2"/>
+                    <circle cx="12.5" cy="12.5" r="5" fill="#fff"/>
+                </svg>`,
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34]
+            });
+        }
+
+        function updateMap() {
+            if (isTeamView) return;
+
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Add markers for each location
+            locations.forEach(location => {
+                const teamMember = teamMembers.find(tm => tm.id === location.assignedTo);
+                
+                // Use status color if available, otherwise use team member color
+                const statusColors = {
+                    'pending': '#808080',
+                    'not-home': '#FFD700',
+                    'go-back': '#FFB6C1',
+                    'sold': '#00FF00',
+                    'garbage': '#FF0000'
+                };
+                
+                // If location has a status color, use it; otherwise use team color
+                let color;
+                if (location.status && location.status !== 'pending') {
+                    color = statusColors[location.status] || (teamMember ? teamMember.color : '#6c757d');
+                } else {
+                    color = teamMember ? teamMember.color : '#6c757d';
+                }
+                
+                const marker = L.marker([location.lat, location.lng], {
+                    icon: createMarkerIcon(color)
+                }).addTo(map);
+
+                const popupContent = `
+                    <div class="popup-content">
+                        <h3>${location.name || 'No Name'}</h3>
+                        <p><strong>Address:</strong> ${location.address || 'N/A'}</p>
+                        <p><strong>Max Speed:</strong> ${location.maxSpeed || 'N/A'}</p>
+                        <p><strong>Current Speed:</strong> ${location.currentSpeed || 'N/A'}</p>
+                        <p><strong>Wireless Oppt:</strong> ${location.wirelessOppt || 'N/A'}</p>
+                        <p><strong>Installed On:</strong> ${location.installedOn || 'N/A'}</p>
+                        <p><strong>Preferred Language:</strong> ${location.prefLang || 'N/A'}</p>
+                        <p><strong>Assigned to:</strong> ${teamMember ? teamMember.name : 'Unassigned'}</p>
+                        <p><strong>Status:</strong> ${location.status}</p>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+
+            // Fit bounds if there are locations
+            if (locations.length > 0) {
+                const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function assignLocation(locationId, teamMemberId) {
+            const location = locations.find(loc => loc.id === locationId);
+            if (location) {
+                location.assignedTo = teamMemberId ? parseInt(teamMemberId) : null;
+                updateMap();
+                updateLocationList();
+                updateStats();
+                saveState();
+            }
+        }
+
+        function updateStatusWithColor(locationId, status) {
+            const location = locations.find(loc => loc.id === locationId);
+            if (location) {
+                location.status = status;
+                
+                // Update the pin color based on status
+                const statusColors = {
+                    'pending': '#808080',      // Gray
+                    'not-home': '#FFD700',     // Yellow
+                    'go-back': '#FFB6C1',      // Pink
+                    'sold': '#00FF00',         // Green
+                    'garbage': '#FF0000'       // Red
+                };
+                
+                location.statusColor = statusColors[status] || '#808080';
+                
+                if (isTeamView) {
+                    // Just update the marker color without refitting bounds
+                    const teamMember = teamMembers.find(tm => tm.name === decodeURIComponent(teamMemberName));
+                    if (teamMember) {
+                        updateSingleMarker(location, teamMember);
+                    }
+                } else {
+                    updateLocationList();
+                }
+                saveState();
+            }
+        }
+
+        function updateSingleMarker(location, teamMember) {
+            // Find and remove the old marker
+            const markerIndex = markers.findIndex(m => {
+                const pos = m.getLatLng();
+                return Math.abs(pos.lat - location.lat) < 0.0001 && Math.abs(pos.lng - location.lng) < 0.0001;
+            });
+            
+            if (markerIndex >= 0) {
+                map.removeLayer(markers[markerIndex]);
+                markers.splice(markerIndex, 1);
+            }
+            
+            // Add new marker with updated color
+            const statusColors = {
+                'pending': '#808080',
+                'not-home': '#FFD700',
+                'go-back': '#FFB6C1',
+                'sold': '#00FF00',
+                'garbage': '#FF0000'
+            };
+            const pinColor = statusColors[location.status] || teamMember.color;
+            
+            const marker = L.marker([location.lat, location.lng], {
+                icon: createMarkerIcon(pinColor)
+            }).addTo(map);
+
+            const popupContent = `
+                <div class="popup-content">
+                    <h3>${location.name || 'No Name'}</h3>
+                    <p><strong>Address:</strong> ${location.address || 'N/A'}</p>
+                    <p><strong>Max Speed:</strong> ${location.maxSpeed || 'N/A'}</p>
+                    <p><strong>Current Speed:</strong> ${location.currentSpeed || 'N/A'}</p>
+                    <p><strong>Wireless Oppt:</strong> ${location.wirelessOppt || 'N/A'}</p>
+                    <p><strong>Installed On:</strong> ${location.installedOn || 'N/A'}</p>
+                    <p><strong>Preferred Language:</strong> ${location.prefLang || 'N/A'}</p>
+                    <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Update Status:</label>
+                    <select onchange="updateStatusWithColor(${location.id}, this.value)" style="padding: 8px; font-size: 14px;">
+                        <option value="pending" ${location.status === 'pending' ? 'selected' : ''}>⚪ Pending</option>
+                        <option value="not-home" ${location.status === 'not-home' ? 'selected' : ''}>🟡 Not Home</option>
+                        <option value="go-back" ${location.status === 'go-back' ? 'selected' : ''}>🩷 Go Back</option>
+                        <option value="sold" ${location.status === 'sold' ? 'selected' : ''}>💰 Sold</option>
+                        <option value="garbage" ${location.status === 'garbage' ? 'selected' : ''}>🔴 Garbage</option>
+                    </select>
+                    <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Notes:</label>
+                    <textarea class="note-input" placeholder="Add notes..." onchange="updateNotes(${location.id}, this.value)">${location.notes || ''}</textarea>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            markers.push(marker);
+        }
+
+        function updateStatus(locationId, status) {
+            updateStatusWithColor(locationId, status);
+        }
+
+        function updateNotes(locationId, notes) {
+            const location = locations.find(loc => loc.id === locationId);
+            if (location) {
+                location.notes = notes;
+                saveState();
+            }
+        }
+
+        function updateLocationList() {
+            if (isTeamView) return;
+            
+            const container = document.getElementById('locationList');
+            container.innerHTML = locations.map(loc => {
+                const teamMember = teamMembers.find(tm => tm.id === loc.assignedTo);
+                return `
+                    <div class="location-item" style="border-left: 4px solid ${teamMember ? teamMember.color : '#6c757d'}">
+                        <strong>${loc.name || 'No Name'}</strong>
+                        <div class="details">${loc.address || 'No Address'}</div>
+                        <div class="details">Assigned: ${teamMember ? teamMember.name : 'Unassigned'}</div>
+                        <div class="details">Max: ${loc.maxSpeed || 'N/A'} | Current: ${loc.currentSpeed || 'N/A'}</div>
+                        <div class="details">Wireless: ${loc.wirelessOppt || 'N/A'} | Lang: ${loc.prefLang || 'N/A'}</div>
+                        <select onchange="assignLocation(${loc.id}, this.value)">
+                            <option value="">Unassigned</option>
+                            ${teamMembers.map(tm => `
+                                <option value="${tm.id}" ${loc.assignedTo === tm.id ? 'selected' : ''}>
+                                    ${tm.name}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            if (isTeamView) return;
+            
+            document.getElementById('totalLocations').textContent = locations.length;
+            document.getElementById('assignedLocations').textContent = 
+                locations.filter(loc => loc.assignedTo).length;
+        }
+
+        function exportData() {
+            const csvData = locations.map(loc => {
+                const teamMember = teamMembers.find(tm => tm.id === loc.assignedTo);
+                return {
+                    Latitude: loc.lat,
+                    Longitude: loc.lng,
+                    Name: loc.name,
+                    Address: loc.address,
+                    'Max Speed': loc.maxSpeed,
+                    'Current Speed': loc.currentSpeed,
+                    'Wireless Oppt': loc.wirelessOppt,
+                    'Installed on': loc.installedOn,
+                    'Pref Lang': loc.prefLang,
+                    'Assigned to': teamMember ? teamMember.name : '',
+                    status: loc.status,
+                    notes: loc.notes
+                };
+            });
+
+            const csv = Papa.unparse(csvData);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `territory-data-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        function saveState() {
+            const state = {
+                locations,
+                teamMembers,
+                nextId,
+                nextTeamId
+            };
+            
+            // Save to Firebase
+            database.ref('salesTerritoryData').set(state)
+                .catch(error => {
+                    console.error('Error saving to Firebase:', error);
+                });
+        }
+
+        function loadState() {
+            // Load from Firebase and listen for changes
+            database.ref('salesTerritoryData').on('value', (snapshot) => {
+                const state = snapshot.val();
+                if (state) {
+                    locations = state.locations || [];
+                    teamMembers = state.teamMembers || teamMembers;
+                    nextId = state.nextId || nextId;
+                    nextTeamId = state.nextTeamId || nextTeamId;
+                    
+                    if (!isTeamView) {
+                        renderTeamMembers();
+                        updateMap();
+                        updateLocationList();
+                        updateStats();
+                    } else {
+                        displayTeamMemberLocations();
+                    }
+                }
+            });
+        }
+
+        // Auto-save every 30 seconds
+        setInterval(saveState, 30000);
+    </script>
+</body>
+</html>
