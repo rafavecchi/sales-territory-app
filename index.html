@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Territory Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Team member view - full screen map */
+        #teamMemberView {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #teamMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .section h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .file-upload {
+            margin-bottom: 15px;
+        }
+
+        .file-upload label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-upload input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+            font-size: 13px;
+        }
+
+        .team-members {
+            margin-top: 15px;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .team-member input[type="color"] {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .team-member input[type="text"] {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .team-member button {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .team-member button:hover {
+            background: #c82333;
+        }
+
+        .team-member .link-btn {
+            padding: 6px 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .team-member .link-btn:hover {
+            background: #218838;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #map, #teamMap {
+            flex: 1;
+            height: 100%;
+        }
+
+        .location-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .location-item {
+            padding: 10px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .location-item strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #2c3e50;
+        }
+
+        .location-item select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .location-item .details {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .info-message {
+            padding: 12px;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            color: #0c5460;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .export-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        .export-section button {
+            flex: 1;
+        }
+
+        .leaflet-popup-content {
+            margin: 10px;
+        }
+
+        .popup-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+
+        .popup-content p {
+            margin: 4px 0;
+            font-size: 13px;
+        }
+
+        .popup-content select {
+            width: 100%;
+            padding: 6px;
+            margin-top: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .popup-content .note-input {
+            width: 100%;
+            padding: 6px;
+            margin-top: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Login screen styles */
+        #loginScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .login-box p {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #5568d3;
+        }
+
+        .login-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 10000;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .gps-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gps-btn:hover {
+            background: #0056b3;
+        }
+
+        .gps-btn.active {
+            background: #28a745;
+        }
+
+        .drawing-tools {
+            position: absolute;
+            top: 80px;
+            left: 370px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .drawing-tools button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .drawing-tools .draw-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .drawing-tools .draw-btn:hover {
+            background: #218838;
+        }
+
+        .drawing-tools .cancel-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .drawing-tools .cancel-btn:hover {
+            background: #c82333;
+        }
+
+        .drawing-tools select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginScreen">
+        <div class="login-box">
+            <h1>📍 Territory Manager</h1>
+            <p>Please log in to continue</p>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="login-btn" id="loginBtn">Log In</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="teamMemberView" class="hidden">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        <button class="gps-btn" id="gpsBtn" onclick="toggleGPS()">📍</button>
+        <div id="teamMap" style="width: 100vw; height: 100vh;"></div>
+    </div>
+
+    <div id="managerView" class="container hidden">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        
+        <div class="drawing-tools" id="drawingTools" style="display: none;">
+            <h3 style="margin-bottom: 10px; font-size: 16px;">Assign by Area</h3>
+            <select id="assignTeamMember">
+                <option value="">Select Team Member</option>
+            </select>
+            <button class="draw-btn" onclick="startDrawing()">Draw Area</button>
+            <button class="cancel-btn" onclick="cancelDrawing()">Cancel</button>
+            <p style="font-size: 12px; color: #6c757d; margin-top: 10px;">Draw a loop around pins to assign them</p>
+        </div>
+        
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>📍 Territory Manager</h1>
+                <p>Door-to-Door Sales Team</p>
+            </div>
+
+            <div class="section">
+                <h2>Import Locations</h2>
+                <div class="info-message">
+                    Upload your CSV with: Latitude, Longitude, Name, Address, Max Speed, Current Speed, Wireless Oppt, Installed on, Pref Lang, Assigned to
+                    <br><br>
+                    <strong>✅ Real-time sync enabled!</strong> All changes sync automatically across all team members' devices.
+                </div>
+                <div class="file-upload">
+                    <label>Upload CSV File</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="importCSV()">Import Locations</button>
+            </div>
+
+            <div class="section">
+                <h2>Team Members</h2>
+                <div class="team-members" id="teamMembers"></div>
+                <button class="btn btn-secondary btn-block" onclick="addTeamMember()">+ Add Team Member</button>
+                <button class="btn btn-primary btn-block" onclick="toggleDrawingTools()">🖊️ Assign by Area</button>
+            </div>
+
+            <div class="section">
+                <h2>Statistics</h2>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="number" id="totalLocations">0</div>
+                        <div class="label">Total Locations</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" id="assignedLocations">0</div>
+                        <div class="label">Assigned</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Locations</h2>
+                <div class="location-list" id="locationList"></div>
+            </div>
+
+            <div class="section">
+                <h2>Export Data</h2>
+                <div class="export-section">
+                    <button class="btn btn-success" onclick="exportData()">Export CSV</button>
+                    <button class="btn btn-secondary" onclick="saveState()">Save State</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // Initialize Firebase with error handling
+        let database;
+        let auth;
+        
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDXnBhUU1hGiZ5W5sEqGqO8Qjyi2wDujwI",
+                authDomain: "sales-territory-app-b0e61.firebaseapp.com",
+                databaseURL: "https://sales-territory-app-b0e61-default-rtdb.firebaseio.com",
+                projectId: "sales-territory-app-b0e61",
+                storageBucket: "sales-territory-app-b0e61.firebasestorage.app",
+                messagingSenderId: "43002944003",
+                appId: "1:43002944003:web:c42a7e3b53c01d88aa4c36"
+            };
+            
+            console.log('Initializing Firebase...');
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            auth = firebase.auth();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            alert('Error initializing Firebase: ' + error.message);
+        }
+
+        // Handle login
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('loginError');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            errorDiv.textContent = '';
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    console.log('User logged in:', userCredential.user.email);
+                    // Login screen will be hidden by onAuthStateChanged
+                })
+                .catch((error) => {
+                    console.error('Login error:', error);
+                    errorDiv.textContent = 'Invalid email or password';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Log In';
+                });
+        }
+
+        // Handle logout
+        function logout() {
+            auth.signOut().then(() => {
+                console.log('User logged out');
+                // Will be redirected to login by onAuthStateChanged
+            }).catch((error) => {
+                console.error('Logout error:', error);
+                alert('Error logging out: ' + error.message);
+            });
+        }
+
+        // Listen for auth state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User authenticated:', user.email);
+                document.getElementById('loginScreen').style.display = 'none';
+                initializeApp();
+            } else {
+                console.log('No user authenticated');
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('teamMemberView').classList.add('hidden');
+                document.getElementById('managerView').classList.add('hidden');
+            }
+        });
+
+        function initializeApp() {
+            // Check if this is a team member view
+            const urlParams = new URLSearchParams(window.location.search);
+            const teamMemberName = urlParams.get('team');
+            const isTeamView = teamMemberName !== null && teamMemberName !== '';
+
+            console.log('Full URL:', window.location.href);
+            console.log('Search string:', window.location.search);
+            console.log('URL params:', window.location.search);
+            console.log('Team member name:', teamMemberName);
+            console.log('Is team view:', isTeamView);
+            console.log('All URL params:');
+            for (const [key, value] of urlParams) {
+                console.log(`  ${key}: ${value}`);
+            }
+
+            // Initialize appropriate view
+            console.log('Initializing view...');
+            if (isTeamView) {
+                console.log('Loading TEAM MEMBER view for:', teamMemberName);
+                initTeamMemberView(teamMemberName, urlParams);
+            } else {
+                console.log('Loading MANAGER view');
+                initManagerView();
+            }
+        }
+
+        let map;
+        let locations = [];
+        let teamMembers = [
+            { id: 1, name: 'Team Member 1', color: '#FF6B6B' },
+            { id: 2, name: 'Team Member 2', color: '#4ECDC4' },
+            { id: 3, name: 'Team Member 3', color: '#45B7D1' }
+        ];
+        let markers = [];
+        let nextId = 1;
+        let nextTeamId = 4;
+        let initialLoad = true; // Track if this is the first load
+        let teamMemberName = null;
+        let isTeamView = false;
+        let gpsWatchId = null;
+        let userLocationMarker = null;
+        let userLocationCircle = null;
+        let isDrawing = false;
+        let drawnPolygon = null;
+        let saveTimeout = null;
+        let isLocalUpdate = false; // Flag to prevent Firebase overwrite during local edits
+
+        // Debounced save function
+        function saveState() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                isLocalUpdate = true;
+                const state = {
+                    locations,
+                    teamMembers,
+                    nextId,
+                    nextTeamId
+                };
+                
+                // Save to Firebase
+                database.ref('salesTerritoryData').set(state)
+                    .then(() => {
+                        console.log('Data saved to Firebase');
+                        setTimeout(() => { isLocalUpdate = false; }, 1000); // Clear flag after 1 second
+                    })
+                    .catch(error => {
+                        console.error('Error saving to Firebase:', error);
+                        isLocalUpdate = false;
+                    });
+            }, 500); // Wait 500ms before saving to batch multiple changes
+        }
+
+        // GPS Tracking Functions
+        function toggleGPS() {
+            const gpsBtn = document.getElementById('gpsBtn');
+            
+            if (gpsWatchId === null) {
+                // Start tracking
+                if ('geolocation' in navigator) {
+                    gpsWatchId = navigator.geolocation.watchPosition(
+                        updateUserLocation,
+                        handleGPSError,
+                        { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+                    );
+                    gpsBtn.classList.add('active');
+                    gpsBtn.textContent = '📍';
+                } else {
+                    alert('GPS is not available on this device');
+                }
+            } else {
+                // Stop tracking
+                navigator.geolocation.clearWatch(gpsWatchId);
+                gpsWatchId = null;
+                gpsBtn.classList.remove('active');
+                
+                // Remove location marker
+                if (userLocationMarker) {
+                    map.removeLayer(userLocationMarker);
+                    userLocationMarker = null;
+                }
+                if (userLocationCircle) {
+                    map.removeLayer(userLocationCircle);
+                    userLocationCircle = null;
+                }
+            }
+        }
+
+        function updateUserLocation(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            // Remove old marker and circle
+            if (userLocationMarker) {
+                map.removeLayer(userLocationMarker);
+            }
+            if (userLocationCircle) {
+                map.removeLayer(userLocationCircle);
+            }
+
+            // Add blue dot marker
+            const blueIcon = L.divIcon({
+                className: 'user-location-marker',
+                html: `<div style="width: 20px; height: 20px; background: #007bff; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            userLocationMarker = L.marker([lat, lng], { icon: blueIcon }).addTo(map);
+            userLocationCircle = L.circle([lat, lng], { radius: accuracy, color: '#007bff', fillColor: '#007bff', fillOpacity: 0.1, weight: 1 }).addTo(map);
+
+            // Center map on first location update
+            if (initialLoad) {
+                map.setView([lat, lng], 16);
+            }
+        }
+
+        function handleGPSError(error) {
+            console.error('GPS error:', error);
+            const gpsBtn = document.getElementById('gpsBtn');
+            gpsBtn.classList.remove('active');
+            alert('Could not get your location. Please check GPS settings.');
+        }
+
+        // Drawing Tools Functions
+        function toggleDrawingTools() {
+            const tools = document.getElementById('drawingTools');
+            const isVisible = tools.style.display !== 'none';
+            tools.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                // Populate team member dropdown
+                const select = document.getElementById('assignTeamMember');
+                select.innerHTML = '<option value="">Select Team Member</option>' + 
+                    teamMembers.map(tm => `<option value="${tm.id}">${tm.name}</option>`).join('');
+            }
+        }
+
+        function startDrawing() {
+            const selectedTeamId = document.getElementById('assignTeamMember').value;
+            if (!selectedTeamId) {
+                alert('Please select a team member first');
+                return;
+            }
+
+            isDrawing = true;
+            const points = [];
+            
+            // Change cursor
+            map.getContainer().style.cursor = 'crosshair';
+            
+            // Create temporary polyline
+            let tempPolyline = null;
+            let startMarker = null;
+            
+            const onMapClick = (e) => {
+                points.push([e.latlng.lat, e.latlng.lng]);
+                
+                // Add start marker on first click
+                if (points.length === 1) {
+                    const startIcon = L.divIcon({
+                        className: 'start-marker',
+                        html: `<div style="width: 12px; height: 12px; background: #28a745; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6]
+                    });
+                    startMarker = L.marker([e.latlng.lat, e.latlng.lng], { icon: startIcon }).addTo(map);
+                }
+                
+                // Check if close to start point (auto-close)
+                if (points.length > 2) {
+                    const startPoint = points[0];
+                    const currentPoint = points[points.length - 1];
+                    const distance = map.distance(
+                        [startPoint[0], startPoint[1]], 
+                        [currentPoint[0], currentPoint[1]]
+                    );
+                    
+                    // If within 50 meters of start, close the loop
+                    if (distance < 50) {
+                        finishDrawing();
+                        return;
+                    }
+                }
+                
+                if (tempPolyline) {
+                    map.removeLayer(tempPolyline);
+                }
+                
+                tempPolyline = L.polyline(points, { color: '#007bff', weight: 2 }).addTo(map);
+            };
+            
+            const onMapDblClick = (e) => {
+                finishDrawing();
+            };
+            
+            const finishDrawing = () => {
+                map.off('click', onMapClick);
+                map.off('dblclick', onMapDblClick);
+                map.getContainer().style.cursor = '';
+                
+                // Remove start marker
+                if (startMarker) {
+                    map.removeLayer(startMarker);
+                    startMarker = null;
+                }
+                
+                if (points.length < 3) {
+                    alert('Draw at least 3 points to create an area');
+                    if (tempPolyline) map.removeLayer(tempPolyline);
+                    isDrawing = false;
+                    return;
+                }
+                
+                // Close the polygon
+                if (tempPolyline) map.removeLayer(tempPolyline);
+                drawnPolygon = L.polygon(points, { color: '#28a745', weight: 2, fillOpacity: 0.1 }).addTo(map);
+                
+                // Find pins inside polygon and assign them
+                assignPinsInPolygon(points, parseInt(selectedTeamId));
+                
+                // Remove polygon after a moment
+                setTimeout(() => {
+                    if (drawnPolygon) {
+                        map.removeLayer(drawnPolygon);
+                        drawnPolygon = null;
+                    }
+                }, 2000);
+                
+                isDrawing = false;
+                toggleDrawingTools();
+            };
+            
+            map.on('click', onMapClick);
+            map.on('dblclick', onMapDblClick);
+        }
+
+        function cancelDrawing() {
+            if (drawnPolygon) {
+                map.removeLayer(drawnPolygon);
+                drawnPolygon = null;
+            }
+            isDrawing = false;
+            toggleDrawingTools();
+        }
+
+        function assignPinsInPolygon(polygonPoints, teamId) {
+            let assignedCount = 0;
+            
+            locations.forEach(location => {
+                if (isPointInPolygon([location.lat, location.lng], polygonPoints)) {
+                    location.assignedTo = teamId;
+                    assignedCount++;
+                }
+            });
+            
+            updateMap();
+            updateLocationList();
+            updateStats();
+            saveState();
+            
+            alert(`Assigned ${assignedCount} pins to team member`);
+        }
+
+        function isPointInPolygon(point, polygon) {
+            const x = point[0], y = point[1];
+            let inside = false;
+            
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const xi = polygon[i][0], yi = polygon[i][1];
+                const xj = polygon[j][0], yj = polygon[j][1];
+                
+                const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+            }
+            
+            return inside;
+        }
+
+        function initManagerView() {
+            console.log('initManagerView called');
+            const managerView = document.getElementById('managerView');
+            const teamView = document.getElementById('teamMemberView');
+            
+            // Remove hidden class and set display
+            teamView.classList.add('hidden');
+            managerView.classList.remove('hidden');
+            teamView.style.display = 'none';
+            managerView.style.display = 'flex';
+            
+            console.log('Manager view display:', managerView.style.display);
+            console.log('Manager view classes:', managerView.className);
+            console.log('Team view display:', teamView.style.display);
+            
+            try {
+                console.log('Creating map...');
+                map = L.map('map').setView([39.8283, -98.5795], 4);
+                console.log('Map created, adding tile layer...');
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                console.log('Tile layer added');
+            } catch (error) {
+                console.error('Map initialization error:', error);
+                alert('Error creating map: ' + error.message);
+            }
+            
+            console.log('Calling renderTeamMembers...');
+            renderTeamMembers();
+            console.log('Calling loadState...');
+            loadState();
+            console.log('initManagerView complete');
+        }
+
+        function initTeamMemberView(memberName, urlParams) {
+            teamMemberName = memberName;
+            isTeamView = true;
+            
+            console.log('initTeamMemberView called');
+            const managerView = document.getElementById('managerView');
+            const teamView = document.getElementById('teamMemberView');
+            
+            // Remove hidden class and set display
+            managerView.classList.add('hidden');
+            teamView.classList.remove('hidden');
+            managerView.style.display = 'none';
+            teamView.style.display = 'block';
+            
+            console.log('Team member view display:', teamView.style.display);
+            console.log('Team view classes:', teamView.className);
+            
+            try {
+                map = L.map('teamMap').setView([39.8283, -98.5795], 4);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                console.log('Map initialized for team member view');
+            } catch (error) {
+                console.error('Team map initialization error:', error);
+                alert('Error creating map: ' + error.message);
+            }
+            
+            loadState();
+        }
+
+        function displayTeamMemberLocations(fitBounds = true) {
+            console.log('displayTeamMemberLocations called, fitBounds:', fitBounds);
+            console.log('Team member name from URL:', teamMemberName);
+            console.log('All team members:', teamMembers);
+            console.log('All locations:', locations);
+            
+            const teamMember = teamMembers.find(tm => tm.name === decodeURIComponent(teamMemberName));
+            
+            console.log('Found team member:', teamMember);
+            
+            if (!teamMember) {
+                console.error('Team member not found!');
+                alert('Team member "' + teamMemberName + '" not found. Please check the link.');
+                return;
+            }
+
+            const myLocations = locations.filter(loc => loc.assignedTo === teamMember.id);
+            console.log('Filtered locations for this team member:', myLocations);
+            
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Add markers for team member's locations
+            myLocations.forEach(location => {
+                // Use status color if available, otherwise use team color
+                const statusColors = {
+                    'pending': '#808080',
+                    'not-home': '#FFD700',
+                    'go-back': '#FFB6C1',
+                    'sold': '#00FF00',
+                    'garbage': '#FF0000'
+                };
+                const pinColor = statusColors[location.status] || teamMember.color;
+                
+                const marker = L.marker([location.lat, location.lng], {
+                    icon: createMarkerIcon(pinColor)
+                }).addTo(map);
+
+                const popupContent = `
+                    <div class="popup-content">
+                        <h3>${location.name || 'No Name'}</h3>
+                        <p><strong>Address:</strong> ${location.address || 'N/A'}</p>
+                        <p><strong>Max Speed:</strong> ${location.maxSpeed || 'N/A'}</p>
+                        <p><strong>Current Speed:</strong> ${location.currentSpeed || 'N/A'}</p>
+                        <p><strong>Wireless Oppt:</strong> ${location.wirelessOppt || 'N/A'}</p>
+                        <p><strong>Installed On:</strong> ${location.installedOn || 'N/A'}</p>
+                        <p><strong>Preferred Language:</strong> ${location.prefLang || 'N/A'}</p>
+                        <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Update Status:</label>
+                        <select onchange="updateStatusWithColor(${location.id}, this.value)" style="padding: 8px; font-size: 14px;">
+                            <option value="pending" ${location.status === 'pending' ? 'selected' : ''}>⚪ Pending</option>
+                            <option value="not-home" ${location.status === 'not-home' ? 'selected' : ''}>🟡 Not Home</option>
+                            <option value="go-back" ${location.status === 'go-back' ? 'selected' : ''}>🩷 Go Back</option>
+                            <option value="sold" ${location.status === 'sold' ? 'selected' : ''}>💰 Sold</option>
+                            <option value="garbage" ${location.status === 'garbage' ? 'selected' : ''}>🔴 Garbage</option>
+                        </select>
+                        <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Notes:</label>
+                        <textarea class="note-input" placeholder="Add notes..." onchange="updateNotes(${location.id}, this.value)">${location.notes || ''}</textarea>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+
+            // Only fit bounds on initial load or when explicitly requested
+            if (fitBounds && myLocations.length > 0) {
+                const bounds = L.latLngBounds(myLocations.map(loc => [loc.lat, loc.lng]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function addTeamMember() {
+            const colors = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#95E1D3', '#F38181', 
+                '#AA96DA', '#FCBAD3', '#FFA07A', '#98D8C8', '#FFD93D',
+                '#6BCF7F', '#4D96FF', '#FF6B9D', '#C780FA', '#FFA500',
+                '#20B2AA', '#FF69B4', '#BA55D3', '#87CEEB', '#32CD32'
+            ];
+            teamMembers.push({
+                id: nextTeamId++,
+                name: `Team Member ${teamMembers.length + 1}`,
+                color: colors[teamMembers.length % colors.length]
+            });
+            renderTeamMembers();
+            updateLocationList();
+        }
+
+        function removeTeamMember(id) {
+            if (teamMembers.length <= 1) {
+                alert('You must have at least one team member');
+                return;
+            }
+            teamMembers = teamMembers.filter(tm => tm.id !== id);
+            // Unassign locations from removed team member
+            locations.forEach(loc => {
+                if (loc.assignedTo === id) {
+                    loc.assignedTo = null;
+                }
+            });
+            renderTeamMembers();
+            updateMap();
+            updateLocationList();
+        }
+
+        function updateTeamMember(id, field, value) {
+            const member = teamMembers.find(tm => tm.id === id);
+            if (member) {
+                member[field] = value;
+                updateMap();
+                updateLocationList();
+            }
+        }
+
+        function getTeamMemberLink(id) {
+            const teamMember = teamMembers.find(tm => tm.id === id);
+            if (!teamMember) return '';
+            // Use team member name in URL (encoded for URL safety)
+            const baseUrl = 'https://rafavecchi.github.io/sales-territory-app/index.html';
+            return `${baseUrl}?team=${encodeURIComponent(teamMember.name)}`;
+        }
+
+        function copyTeamLink(id) {
+            const link = getTeamMemberLink(id);
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy this link:', link);
+            });
+        }
+
+        function renderTeamMembers() {
+            const container = document.getElementById('teamMembers');
+            container.innerHTML = teamMembers.map(tm => `
+                <div class="team-member">
+                    <input type="color" value="${tm.color}" 
+                           onchange="updateTeamMember(${tm.id}, 'color', this.value)">
+                    <input type="text" value="${tm.name}" 
+                           onchange="updateTeamMember(${tm.id}, 'name', this.value)">
+                    <button class="link-btn" onclick="copyTeamLink(${tm.id})">📋 Link</button>
+                    <button onclick="removeTeamMember(${tm.id})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        async function importCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                complete: async function(results) {
+                    const newLocations = [];
+                    
+                    for (const row of results.data) {
+                        // Skip empty rows
+                        if (!row.Latitude && !row.Longitude) continue;
+                        
+                        const lat = parseFloat(row.Latitude);
+                        const lng = parseFloat(row.Longitude);
+                        
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            // Find team member by name if assigned
+                            let assignedToId = null;
+                            if (row['Assigned to']) {
+                                const assignedName = row['Assigned to'].trim();
+                                const teamMember = teamMembers.find(tm => 
+                                    tm.name.toLowerCase() === assignedName.toLowerCase()
+                                );
+                                if (teamMember) {
+                                    assignedToId = teamMember.id;
+                                } else {
+                                    // Create new team member if not found
+                                    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3', '#FFA07A', '#98D8C8'];
+                                    const newMember = {
+                                        id: nextTeamId++,
+                                        name: assignedName,
+                                        color: colors[(teamMembers.length) % colors.length]
+                                    };
+                                    teamMembers.push(newMember);
+                                    assignedToId = newMember.id;
+                                }
+                            }
+                            
+                            // Check if location already exists (within 0.0001 degrees ~11 meters)
+                            const existingIndex = locations.findIndex(loc => 
+                                Math.abs(loc.lat - lat) < 0.0001 && Math.abs(loc.lng - lng) < 0.0001
+                            );
+                            
+                            const newLocation = {
+                                id: existingIndex >= 0 ? locations[existingIndex].id : nextId++,
+                                name: row.Name || '',
+                                address: row.Address || '',
+                                lat: lat,
+                                lng: lng,
+                                maxSpeed: row['Max Speed'] || '',
+                                currentSpeed: row['Current Speed'] || '',
+                                wirelessOppt: row['Wireless Oppt'] || '',
+                                installedOn: row['Installed on'] || '',
+                                prefLang: row['Pref Lang'] || '',
+                                assignedTo: assignedToId, // Always update assignment
+                                // Preserve status and notes if pin exists
+                                status: existingIndex >= 0 ? locations[existingIndex].status : 'pending',
+                                notes: existingIndex >= 0 ? locations[existingIndex].notes : ''
+                            };
+                            
+                            if (existingIndex >= 0) {
+                                // Replace existing location (preserving status/notes, updating assignment)
+                                locations[existingIndex] = newLocation;
+                            } else {
+                                // Add new location
+                                newLocations.push(newLocation);
+                            }
+                        }
+                    }
+                    
+                    locations = locations.concat(newLocations);
+                    updateMap();
+                    updateLocationList();
+                    updateStats();
+                    renderTeamMembers();
+                    saveState();
+                    alert(`Imported ${newLocations.length} new locations, updated ${results.data.length - newLocations.length} existing locations`);
+                }
+            });
+        }
+
+        function createMarkerIcon(color) {
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z" 
+                          fill="${color}" stroke="#fff" stroke-width="2"/>
+                    <circle cx="12.5" cy="12.5" r="5" fill="#fff"/>
+                </svg>`,
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34]
+            });
+        }
+
+        function updateMap() {
+            if (isTeamView) return;
+
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Add markers for each location
+            locations.forEach(location => {
+                const teamMember = teamMembers.find(tm => tm.id === location.assignedTo);
+                
+                // Use status color if available, otherwise use team member color
+                const statusColors = {
+                    'pending': '#808080',
+                    'not-home': '#FFD700',
+                    'go-back': '#FFB6C1',
+                    'sold': '#00FF00',
+                    'garbage': '#FF0000'
+                };
+                
+                // If location has a status color, use it; otherwise use team color
+                let color;
+                if (location.status && location.status !== 'pending') {
+                    color = statusColors[location.status] || (teamMember ? teamMember.color : '#6c757d');
+                } else {
+                    color = teamMember ? teamMember.color : '#6c757d';
+                }
+                
+                const marker = L.marker([location.lat, location.lng], {
+                    icon: createMarkerIcon(color)
+                }).addTo(map);
+
+                const popupContent = `
+                    <div class="popup-content">
+                        <h3>${location.name || 'No Name'}</h3>
+                        <p><strong>Address:</strong> ${location.address || 'N/A'}</p>
+                        <p><strong>Max Speed:</strong> ${location.maxSpeed || 'N/A'}</p>
+                        <p><strong>Current Speed:</strong> ${location.currentSpeed || 'N/A'}</p>
+                        <p><strong>Wireless Oppt:</strong> ${location.wirelessOppt || 'N/A'}</p>
+                        <p><strong>Installed On:</strong> ${location.installedOn || 'N/A'}</p>
+                        <p><strong>Preferred Language:</strong> ${location.prefLang || 'N/A'}</p>
+                        <p><strong>Assigned to:</strong> ${teamMember ? teamMember.name : 'Unassigned'}</p>
+                        <p><strong>Status:</strong> ${location.status}</p>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+
+            // Fit bounds if there are locations
+            if (locations.length > 0) {
+                const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function assignLocation(locationId, teamMemberId) {
+            const location = locations.find(loc => loc.id === locationId);
+            if (location) {
+                location.assignedTo = teamMemberId ? parseInt(teamMemberId) : null;
+                updateMap();
+                updateLocationList();
+                updateStats();
+                saveState();
+            }
+        }
+
+        function updateStatusWithColor(locationId, status) {
+            const location = locations.find(loc => loc.id === locationId);
+            if (location) {
+                location.status = status;
+                
+                // Update the pin color based on status
+                const statusColors = {
+                    'pending': '#808080',      // Gray
+                    'not-home': '#FFD700',     // Yellow
+                    'go-back': '#FFB6C1',      // Pink
+                    'sold': '#00FF00',         // Green
+                    'garbage': '#FF0000'       // Red
+                };
+                
+                location.statusColor = statusColors[status] || '#808080';
+                
+                if (isTeamView) {
+                    // Just update the marker color without refitting bounds
+                    const teamMember = teamMembers.find(tm => tm.name === decodeURIComponent(teamMemberName));
+                    if (teamMember) {
+                        updateSingleMarker(location, teamMember);
+                    }
+                } else {
+                    updateLocationList();
+                }
+                saveState();
+            }
+        }
+
+        function updateSingleMarker(location, teamMember) {
+            // Find and remove the old marker
+            const markerIndex = markers.findIndex(m => {
+                const pos = m.getLatLng();
+                return Math.abs(pos.lat - location.lat) < 0.0001 && Math.abs(pos.lng - location.lng) < 0.0001;
+            });
+            
+            if (markerIndex >= 0) {
+                map.removeLayer(markers[markerIndex]);
+                markers.splice(markerIndex, 1);
+            }
+            
+            // Add new marker with updated color
+            const statusColors = {
+                'pending': '#808080',
+                'not-home': '#FFD700',
+                'go-back': '#FFB6C1',
+                'sold': '#00FF00',
+                'garbage': '#FF0000'
+            };
+            const pinColor = statusColors[location.status] || teamMember.color;
+            
+            const marker = L.marker([location.lat, location.lng], {
+                icon: createMarkerIcon(pinColor)
+            }).addTo(map);
+
+            const popupContent = `
+                <div class="popup-content">
+                    <h3>${location.name || 'No Name'}</h3>
+                    <p><strong>Address:</strong> ${location.address || 'N/A'}</p>
+                    <p><strong>Max Speed:</strong> ${location.maxSpeed || 'N/A'}</p>
+                    <p><strong>Current Speed:</strong> ${location.currentSpeed || 'N/A'}</p>
+                    <p><strong>Wireless Oppt:</strong> ${location.wirelessOppt || 'N/A'}</p>
+                    <p><strong>Installed On:</strong> ${location.installedOn || 'N/A'}</p>
+                    <p><strong>Preferred Language:</strong> ${location.prefLang || 'N/A'}</p>
+                    <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Update Status:</label>
+                    <select onchange="updateStatusWithColor(${location.id}, this.value)" style="padding: 8px; font-size: 14px;">
+                        <option value="pending" ${location.status === 'pending' ? 'selected' : ''}>⚪ Pending</option>
+                        <option value="not-home" ${location.status === 'not-home' ? 'selected' : ''}>🟡 Not Home</option>
+                        <option value="go-back" ${location.status === 'go-back' ? 'selected' : ''}>🩷 Go Back</option>
+                        <option value="sold" ${location.status === 'sold' ? 'selected' : ''}>💰 Sold</option>
+                        <option value="garbage" ${location.status === 'garbage' ? 'selected' : ''}>🔴 Garbage</option>
+                    </select>
+                    <label style="display: block; margin-top: 8px; font-size: 12px; font-weight: bold;">Notes:</label>
+                    <textarea class="note-input" placeholder="Add notes..." onchange="updateNotes(${location.id}, this.value)">${location.notes || ''}</textarea>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            markers.push(marker);
+        }
+
+        function updateStatus(locationId, status) {
+            updateStatusWithColor(locationId, status);
+        }
+
+        function updateNotes(locationId, notes) {
+            const location = locations.find(loc => loc.id === locationId);
+            if (location) {
+                location.notes = notes;
+                saveState();
+            }
+        }
+
+        function updateLocationList() {
+            if (isTeamView) return;
+            
+            const container = document.getElementById('locationList');
+            container.innerHTML = locations.map(loc => {
+                const teamMember = teamMembers.find(tm => tm.id === loc.assignedTo);
+                return `
+                    <div class="location-item" style="border-left: 4px solid ${teamMember ? teamMember.color : '#6c757d'}">
+                        <strong>${loc.name || 'No Name'}</strong>
+                        <div class="details">${loc.address || 'No Address'}</div>
+                        <div class="details">Assigned: ${teamMember ? teamMember.name : 'Unassigned'}</div>
+                        <div class="details">Max: ${loc.maxSpeed || 'N/A'} | Current: ${loc.currentSpeed || 'N/A'}</div>
+                        <div class="details">Wireless: ${loc.wirelessOppt || 'N/A'} | Lang: ${loc.prefLang || 'N/A'}</div>
+                        <select onchange="assignLocation(${loc.id}, this.value)">
+                            <option value="">Unassigned</option>
+                            ${teamMembers.map(tm => `
+                                <option value="${tm.id}" ${loc.assignedTo === tm.id ? 'selected' : ''}>
+                                    ${tm.name}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            if (isTeamView) return;
+            
+            document.getElementById('totalLocations').textContent = locations.length;
+            document.getElementById('assignedLocations').textContent = 
+                locations.filter(loc => loc.assignedTo).length;
+        }
+
+        function exportData() {
+            const csvData = locations.map(loc => {
+                const teamMember = teamMembers.find(tm => tm.id === loc.assignedTo);
+                return {
+                    Latitude: loc.lat,
+                    Longitude: loc.lng,
+                    Name: loc.name,
+                    Address: loc.address,
+                    'Max Speed': loc.maxSpeed,
+                    'Current Speed': loc.currentSpeed,
+                    'Wireless Oppt': loc.wirelessOppt,
+                    'Installed on': loc.installedOn,
+                    'Pref Lang': loc.prefLang,
+                    'Assigned to': teamMember ? teamMember.name : '',
+                    status: loc.status,
+                    notes: loc.notes
+                };
+            });
+
+            const csv = Papa.unparse(csvData);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `territory-data-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Auto-save every 30 seconds
+        setInterval(saveState, 30000);
+    </script>
+</body>
+</html>
