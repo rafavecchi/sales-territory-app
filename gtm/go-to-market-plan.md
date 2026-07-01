@@ -27,7 +27,7 @@ The two hard gates you must clear *before* any of that are: (a) **USDA-inspected
 |---|---|
 | **Hero benefit** | "Crispy chicken bites, air-fryer ready in ~12 minutes." Convenience + crowd-pleaser first; "authentic Brazilian coxinha" second. |
 | **Occasions** | Game day, kids' after-school, party appetizer, potluck, quick protein snack. Utah families are large — lean into *"feeds a crowd."* |
-| **Pack for club** | Club needs a big, high-value bag. Target **~2–2.5 lb / 24–30 count** resealable bag (bump the 10–20 count up for club economics), or a **2-bag club multipack**. Retail-grocery packs stay at 10–20 count. |
+| **Pack for club** | A **premium ~1.5–2 lb / 20–24 count** resealable bag at **$14.99** (~$0.65/piece). Bigger, quality pieces at a fair per-unit price beat a 30-count bag priced so low (~$0.40/piece) that the margin collapses. Retail-grocery packs stay at 10–20 count. |
 | **Dips angle** | Include or suggest a dipping sauce (ranch, spicy mayo, chimichurri, garlic). Dips lift perceived value and give a marketing hook. |
 | **Naming** | Keep "coxinha" but pair it with a plain-English descriptor on-pack: e.g. *"Coxinhas — Brazilian Crispy Chicken Bites."* Shoppers must understand it in 2 seconds at a freezer door. |
 | **Frozen, not par-baked** | Sell fully-cooked-then-frozen so the consumer only reheats. Simplifies food-safety messaging ("fully cooked") and cook instructions. |
@@ -62,18 +62,21 @@ You don't need all of this to run a Road Show, but you need it to become a stock
 
 Club stores cap markup low (**Costco ~14–15%**), which means your wholesale price and retail price are close — great for the shopper, brutal on a thin cost structure. Work the math backward from the shelf. See **`unit-economics.md`** for the editable model. Rough illustrative target:
 
-| Line | Illustrative target (per club bag) |
+| Line | Illustrative target (per club bag, 20–24 ct) |
 |---|---|
-| Club retail price | **$11.99** |
-| Costco pays you (~÷1.14) | **~$10.50** |
-| Freight + cold-chain to depot | your number |
-| Co-pack COGS (chicken, breading, bag, labor) | must land so that **gross margin ≥ ~25–30%** after freight |
+| Club retail price | **$14.99** |
+| Costco pays you (~÷1.14) | **~$13.15** |
+| Freight + cold-chain to depot | ~$0.90 (your number) |
+| Co-pack COGS (chicken, breading, bag, labor) | ~$6.50 → **gross margin ~44%** after freight |
 | Slotting / demo / spoilage reserve | budget separately |
 
-**Realistic co-pack cost:** for a ~2 lb bag, expect **~$8–$13/bag at startup volume** and **~$5–$7/bag at scale** (`unit-economics.md` has the full bottom-up build, the biggest cost swings, and a co-packer quote cheat sheet). Since the club math needs COGS around $6.50/bag, **you only clear margin at mid-to-high volume** — volume is the lever.
+At **$14.99 for a premium 20–24 count bag** (~$0.65/piece — defensible vs. $2–4 fresh) the margin breathes. Even at a rough **$8/bag COGS you're still ~32%**; the earlier $11.99/30-ct target left you break-even or underwater and was too cheap for a filled, labor-intensive product.
+
+**Realistic co-pack cost:** for a ~1.5–2 lb premium bag, expect **~$7–$12/bag at startup volume** and **~$5–$7/bag at scale** (`unit-economics.md` has the full bottom-up build, the biggest cost swings, and a co-packer quote cheat sheet). $14.99 clears a healthy margin across most of that range — volume still helps, but you're no longer betting the channel on hitting rock-bottom COGS.
 
 **Rules of thumb:**
-- If you can't hit a **healthy margin at ~$11.99 retail**, the club channel will not work — fix COGS (bigger production runs, cheaper cut, co-pack negotiation) before pitching.
+- Price to the **product's real value, not the bottom of the club band.** $14.99 for 20–24 quality pieces reads as club value while protecting margin; $11.99 for 30 pieces (~$0.40 each) does not.
+- If you can't hit a **healthy margin at ~$14.99 retail**, the club channel will not work — fix COGS (bigger production runs, cheaper cut, co-pack negotiation) before pitching.
 - Club volume is enormous but unforgiving: a single warehouse can move hundreds of units/week. Make sure your co-packer can **scale supply** before you win, or a "yes" becomes a stockout that kills the relationship.
 
 ---
@@ -109,7 +112,7 @@ Capture every event's lead/velocity data — this is your ammunition for the buy
 ## 7. Phased rollout
 
 **Phase 0 — Foundations (Months 0–3)**
-Lock USDA co-packer • finalize recipe & shelf-stable frozen spec • club-format packaging + UPC • liability insurance • cost model validated at $11.99 • brand name/label • RangeMe listing.
+Lock USDA co-packer • finalize recipe & shelf-stable frozen spec • club-format packaging + UPC • liability insurance • cost model validated at $14.99 (20–24 ct) • brand name/label • RangeMe listing.
 
 **Phase 1 — Prove it in Utah (Months 2–6)**
 Farmers markets + festivals • Harmons/independent Utah placement (10–20 ct) • apply for Costco Road Shows and Sam's demo events • collect velocity data • build social content library.
@@ -127,7 +130,7 @@ Add Costco regions (Mountain West → Southwest → national) • expand grocery
 - **Road Show / demo velocity:** units sold per warehouse per day (the buyer's #1 metric).
 - **Sampling conversion:** % of samplers who buy.
 - **Reorder / repeat rate** at any stocked account.
-- **Gross margin %** after freight (guard the $11.99 math).
+- **Gross margin %** after freight (guard the $14.99 / 20–24 ct math).
 - **Fill rate / stockout days** (a won account you can't supply is worse than no account).
 - **Warehouses/accounts live** and **weekly velocity trend**.
 
@@ -150,5 +153,5 @@ Add Costco regions (Mountain West → Southwest → national) • expand grocery
 
 See **`90-day-action-plan.md`** for the week-by-week checklist. The first three moves:
 1. **Shortlist and call USDA-inspected co-packers** (breaded poultry appetizer capability). Nothing else matters until this is real.
-2. **Build the cost model** at $11.99 club retail and confirm margin (`unit-economics.md`).
+2. **Build the cost model** at $14.99 club retail (20–24 ct) and confirm margin (`unit-economics.md`).
 3. **Create the RangeMe listing** and identify the **Costco Mountain-region frozen buyer** + a **Road Show operator**.

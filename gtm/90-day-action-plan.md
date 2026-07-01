@@ -5,19 +5,19 @@ The goal of the first 90 days is **not** a Costco PO. It's to (1) make the produ
 ## Weeks 1–2 — Reality-check the gates
 - [ ] **Shortlist 5+ USDA-inspected co-packers** that can make breaded poultry appetizers (UT/ID/CO/CA in freight range). Use the **co-packer question list + comparison tracker** in `unit-economics.md`.
 - [ ] Confirm each co-packer's **GFSI (SQF/BRCGS)** status and whether they **form by machine or by hand** (biggest cost swing).
-- [ ] Ask each for quotes at **3 volume tiers**; expect ~$8–13/bag at startup, ~$5–7/bag at scale. Log results in the tracker.
+- [ ] Ask each for quotes at **3 volume tiers**; expect ~$7–12/bag at startup, ~$5–7/bag at scale. Log results in the tracker.
 - [ ] Draft the **cost model** (`unit-economics.md`) with rough numbers; identify the COGS you must beat.
 - [ ] Lock the **positioning**: "air-fryer crispy chicken bites," not ethnic specialty.
 
 ## Weeks 3–4 — Product & pack
 - [ ] Finalize the **frozen, fully-cooked** recipe with a co-packer sample run.
-- [ ] Decide **club pack format** (24–30 ct / multipack) vs. grocery 10–20 ct.
+- [ ] Decide **club pack format** (premium 20–24 ct at $14.99) vs. grocery 10–20 ct.
 - [ ] Design **label** (USDA-compliant: est. number, safe handling, allergens, "fully cooked," air-fryer instructions) + get **UPC/GTIN**.
 - [ ] Test **air-fryer cook time** and write clear on-pack instructions.
 
 ## Weeks 5–6 — Legitimacy & listing
 - [ ] Bind **product/general liability insurance** ($2–5M).
-- [ ] Get a real **co-packer quote at target volume**; finalize `unit-economics.md`. Confirm margin ≥ ~25–30% at $11.99.
+- [ ] Get a real **co-packer quote at target volume**; finalize `unit-economics.md`. Confirm margin ≥ ~30% at $14.99 (20–24 ct).
 - [ ] Build the **RangeMe listing** (pro photos, story, margins, capacity).
 - [ ] Identify the **Costco Mountain-region frozen buyer** and 2–3 **Road Show operators**; open conversations.
 
@@ -40,5 +40,5 @@ The goal of the first 90 days is **not** a Costco PO. It's to (1) make the produ
 
 ## The 3 things that stop everything if unsolved
 1. **No USDA co-packer** → you cannot legally sell. Solve first.
-2. **Margin fails at $11.99** → club channel is dead until COGS drops. Solve second.
+2. **Margin fails at $14.99 (20–24 ct)** → club channel is dead until COGS drops. Solve second.
 3. **Can't supply/finance a won order** → a "yes" becomes a stockout that burns the buyer. Solve before you pitch.
