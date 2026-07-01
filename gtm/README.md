@@ -5,7 +5,7 @@ Go-to-market strategy for selling frozen coxinhas into **club stores**, starting
 ## Documents
 - **[go-to-market-plan.md](./go-to-market-plan.md)** — the full plan: positioning, gates, channel strategy, phased rollout, KPIs, risks.
 - **[costco-entry-playbook.md](./costco-entry-playbook.md)** — how Costco buys and how to land a slot (Road Shows, RangeMe, regional buyer, supplier checklist).
-- **[unit-economics.md](./unit-economics.md)** — editable worksheet to price backward from the shelf and protect margin.
+- **[unit-economics.md](./unit-economics.md)** — editable worksheet to price backward from the shelf and protect margin, plus a **co-packer quote cheat sheet** (realistic cost ranges, the questions to ask, and a comparison tracker).
 - **[90-day-action-plan.md](./90-day-action-plan.md)** — week-by-week checklist for the Utah launch.
 
 ## The one-paragraph version

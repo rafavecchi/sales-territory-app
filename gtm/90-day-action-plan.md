@@ -3,8 +3,9 @@
 The goal of the first 90 days is **not** a Costco PO. It's to (1) make the product legally producible and unit-economically viable, and (2) generate the velocity proof that earns a Road Show. Everything is sequenced around the two hard gates.
 
 ## Weeks 1–2 — Reality-check the gates
-- [ ] **Shortlist 5+ USDA-inspected co-packers** that can make breaded poultry appetizers (UT/ID/CO/CA in freight range). Send your recipe/spec, ask for capability, MOQ, lead time, and quote.
-- [ ] Confirm each co-packer's **GFSI (SQF/BRCGS)** status.
+- [ ] **Shortlist 5+ USDA-inspected co-packers** that can make breaded poultry appetizers (UT/ID/CO/CA in freight range). Use the **co-packer question list + comparison tracker** in `unit-economics.md`.
+- [ ] Confirm each co-packer's **GFSI (SQF/BRCGS)** status and whether they **form by machine or by hand** (biggest cost swing).
+- [ ] Ask each for quotes at **3 volume tiers**; expect ~$8–13/bag at startup, ~$5–7/bag at scale. Log results in the tracker.
 - [ ] Draft the **cost model** (`unit-economics.md`) with rough numbers; identify the COGS you must beat.
 - [ ] Lock the **positioning**: "air-fryer crispy chicken bites," not ethnic specialty.
 

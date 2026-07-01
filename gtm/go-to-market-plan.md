@@ -70,6 +70,8 @@ Club stores cap markup low (**Costco ~14–15%**), which means your wholesale pr
 | Co-pack COGS (chicken, breading, bag, labor) | must land so that **gross margin ≥ ~25–30%** after freight |
 | Slotting / demo / spoilage reserve | budget separately |
 
+**Realistic co-pack cost:** for a ~2 lb bag, expect **~$8–$13/bag at startup volume** and **~$5–$7/bag at scale** (`unit-economics.md` has the full bottom-up build, the biggest cost swings, and a co-packer quote cheat sheet). Since the club math needs COGS around $6.50/bag, **you only clear margin at mid-to-high volume** — volume is the lever.
+
 **Rules of thumb:**
 - If you can't hit a **healthy margin at ~$11.99 retail**, the club channel will not work — fix COGS (bigger production runs, cheaper cut, co-pack negotiation) before pitching.
 - Club volume is enormous but unforgiving: a single warehouse can move hundreds of units/week. Make sure your co-packer can **scale supply** before you win, or a "yes" becomes a stockout that kills the relationship.
